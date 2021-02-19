@@ -1,31 +1,54 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
-import { StyleSheet, Text, View, TextInput, Button } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  Button,
+  ScrollView,
+  FlatList,
+} from "react-native";
+import GoalItem from "./components/GoalItem";
+import GoalInput from "./components/GoalInput";
 
 export default function App() {
-  const [enteredGoal, setEnteredGoal] = useState("");
   const [courseGoals, setCourseGoals] = useState([]);
+  const [isAddMode, setIsAddMode] = useState(false);
 
-  const goalTextHandler = (enteredText) => {
-    setEnteredGoal(enteredText);
-  };
-
-  const goalAddHandler = () => {
-    setCourseGoals(currentGoals => [...currentGoals, enteredGoal]);
+  const goalAddHandler = (goalTitle) => {
+    setCourseGoals((currentGoals) => [
+      ...currentGoals,
+      { key: Math.random().toString(), value: goalTitle },
+    ]);
     console.log(courseGoals);
+    setIsAddMode(false);
   };
+
+  const removeGoalHandler = (goalId) => {
+    setCourseGoals((currentGoals) => {
+      return currentGoals.filter((goal) => goalId!==goal.key);
+    });
+  };
+
+  const cancelGoalAdditionHandler = () => {
+    setIsAddMode(false);
+  }
+
   return (
     <View style={styles.screen}>
-      <View style={styles.inputContainer}>
-        <TextInput
-          placeholder="Course Goal"
-          style={styles.inputText}
-          value={enteredGoal}
-          onChangeText={goalTextHandler}
-        />
-        <Button title="ADD" onPress={goalAddHandler} />
-      </View>
-      <View></View>
+      <Button title="Add New Goal" onPress={() => setIsAddMode(true)} />
+      <GoalInput addGoalHandler={goalAddHandler} visible={isAddMode} onCancel={cancelGoalAdditionHandler}/>
+      <FlatList
+        data={courseGoals}
+        renderItem={(itemData) => (
+          <GoalItem
+            id={itemData.item.key}
+            onDelete={removeGoalHandler}
+            title={itemData.item.value}
+          />
+        )}
+      />
     </View>
   );
 }
@@ -33,17 +56,5 @@ export default function App() {
 const styles = StyleSheet.create({
   screen: {
     padding: 20,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  inputText: {
-    borderBottomWidth: 1,
-    borderBottomColor: "black",
-    textAlign: "center",
-    margin: 10,
-    width: "80%",
   },
 });
